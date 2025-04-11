@@ -92,4 +92,6 @@ private:
   int vgicp_correspondence_randomness_;
   double vgicp_transformation_epsilon_;
   double vgicp_rotation_epsilon_;
+  
+
 };

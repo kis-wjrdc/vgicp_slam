@@ -45,6 +45,7 @@ void VGICPSLAMNode::declareParameters() {
   declare_parameter("vgicp_correspondence_randomness", 20);
   declare_parameter("vgicp_transformation_epsilon", 1e-5);
   declare_parameter("vgicp_rotation_epsilon", 2e-3);
+  
 }
 
 void VGICPSLAMNode::getParameters() {
@@ -58,6 +59,7 @@ void VGICPSLAMNode::getParameters() {
   vgicp_correspondence_randomness_ = get_parameter("vgicp_correspondence_randomness").as_int();
   vgicp_transformation_epsilon_ = get_parameter("vgicp_transformation_epsilon").as_double();
   vgicp_rotation_epsilon_ = get_parameter("vgicp_rotation_epsilon").as_double();
+  
 }
 
 void VGICPSLAMNode::printParameters() {
@@ -72,6 +74,7 @@ void VGICPSLAMNode::printParameters() {
   RCLCPP_INFO(this->get_logger(), "vgicp_correspondence_randomness: %d", vgicp_correspondence_randomness_);
   RCLCPP_INFO(this->get_logger(), "vgicp_transformation_epsilon: %.6f", vgicp_transformation_epsilon_);
   RCLCPP_INFO(this->get_logger(), "vgicp_rotation_epsilon: %.6f", vgicp_rotation_epsilon_);
+  
 }
 
 void VGICPSLAMNode::initializeSubscriptions() {
@@ -194,6 +197,7 @@ void VGICPSLAMNode::publishGlobalMap() {
   global_map_pub_->publish(map_msg);
 }
 
+// pointCloudCallback.cpp
 void VGICPSLAMNode::pointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
   if (collecting_imu_) {
     RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 2000, "Waiting for IMU alignment...");
@@ -214,7 +218,7 @@ void VGICPSLAMNode::pointCloudCallback(const sensor_msgs::msg::PointCloud2::Shar
   // 初回は地図作成＋表示
   if (is_first_frame_) {
     addToLocalMap(filtered_cloud);
-    *global_map_ += *filtered_cloud;
+    *global_map_ += *input_cloud;
 
     // グローバルマップのダウンサンプリング
     pcl::VoxelGrid<pcl::PointXYZI> voxel_map;
@@ -237,14 +241,20 @@ void VGICPSLAMNode::pointCloudCallback(const sensor_msgs::msg::PointCloud2::Shar
   if (!vgicp_->hasConverged()) return;
 
   Eigen::Matrix4f transformation = vgicp_->getFinalTransformation();
+
+
+
+
   previous_pose_ = transformation;
 
   Eigen::Vector3f current_position = transformation.block<3, 1>(0, 3);
   if ((current_position - last_added_position_).norm() >= min_add_dist_) {
     pcl::PointCloud<pcl::PointXYZI>::Ptr transformed(new pcl::PointCloud<pcl::PointXYZI>());
+    pcl::PointCloud<pcl::PointXYZI>::Ptr input_transformed(new pcl::PointCloud<pcl::PointXYZI>());
     pcl::transformPointCloud(*filtered_cloud, *transformed, transformation);
+    pcl::transformPointCloud(*input_cloud, *input_transformed, transformation);
     addToLocalMap(transformed);
-    *global_map_ += *transformed;
+    *global_map_ += *input_transformed;
 
     // グローバルマップのダウンサンプリング
     pcl::VoxelGrid<pcl::PointXYZI> voxel_map;

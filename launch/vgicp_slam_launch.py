@@ -14,17 +14,18 @@ def generate_launch_description():
             parameters=[{
                 # VGICP SLAM 全体の設定
                 'voxel_size_for_vgicp': 0.3,    # VGICPに使う点群のダウンサンプリングボクセルサイズ
-                'voxel_size_for_map': 0.05,      # 地図の保存用ボクセルサイズ
-                'vgicp_resolution': 1.0,        # ボクセルの解像度（VGICP内部）
+                'voxel_size_for_map': 0.1,      # 地図の保存用ボクセルサイズ
+                'vgicp_resolution': 0.5,        # ボクセルの解像度（VGICP内部）
                 'min_add_dist': 0.3,            # 地図に追加する最小距離（ロボットがこの距離以上動いたら更新）
-                'window_size': 30,              # ローカルマップに保持するフレーム数
+                'window_size': 20,              # ローカルマップに保持するフレーム数
 
                 # VGICPアルゴリズムの詳細設定（チューニング用）
-                'vgicp_num_threads': 4,               # 並列計算に使うスレッド数
+                'vgicp_num_threads': 6,               # 並列計算に使うスレッド数
                 'vgicp_max_iterations': 30,           # 最大反復回数
-                'vgicp_correspondence_randomness': 20, # K近傍探索の数（多いほど精度↑、計算負荷↑）
+                'vgicp_correspondence_randomness': 30, # K近傍探索の数（多いほど精度↑、計算負荷↑）
                 'vgicp_transformation_epsilon': 1.0e-5, # 平行移動の収束判定しきい値
-                'vgicp_rotation_epsilon': 0.002         # 回転収束のしきい値（ラジアン）
+                'vgicp_rotation_epsilon': 0.002        # 回転収束のしきい値（ラジアン）
+                
             }]
         )
     ])
